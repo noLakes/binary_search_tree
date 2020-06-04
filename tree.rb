@@ -42,6 +42,15 @@ class Tree
 
   end
 
+  def find_parent(val, read = @root)
+    child = find(val)
+    return nil if child.nil?
+    until read.left_child == child || read.right_child == child do
+      child.val < read.val ? read = read.left_child : read = read.right_child
+    end
+    return read
+  end
+
   def find(val, read = @root)
     return nil if read.nil?
     if val == read.val
@@ -104,3 +113,4 @@ p x.in_order
 puts "\npost-order"
 p x.post_order
 
+p x.find_parent(324)
