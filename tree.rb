@@ -61,6 +61,65 @@ class Tree
       find(val, read.right_child)
     end
   end
+
+  def pre_order(node=@root)
+    stack = []
+    output = []
+    read = node
+    stack.push(read)
+    while !stack.empty?
+      read = stack.shift
+      stack.push(read.left_child) unless read.left_child.nil?
+      stack.push(read.right_child) unless read.right_child.nil?
+      output.push(read.val)
+    end
+    output
+  end
+
+  def in_order(node=@root)
+    stack = []
+    output = []
+    read = node
+    while (read || !stack.empty?)
+      while read
+        stack.push(read)
+        read = read.left_child
+      end
+      read = stack.pop
+      output.push(read.val)
+      read = read.right_child
+    end
+    output
+  end
+
+  def reverse_order(node=@root)
+    stack = []
+    output = []
+    read = node
+    while (read || !stack.empty?)
+      while read
+        stack.push(read)
+        read = read.right_child
+      end
+      read = stack.pop
+      output.push(read.val)
+      read = read.left_child
+    end
+    output
+  end
+
+  #Left Right Root
+  def post_order
+
+  end
+
+  def level_order
+    #returns {0 => [root], 1 => [lvl1 vals] 2 => [lvl2 vals].....}
+  end
+
 end
 
-x = Tree.new([1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324])
+x = Tree.new([1, 7, 4, 23, 8, 9, 3, 5, 67, 6345, 324])
+puts x.in_order.join(' ')
+puts x.reverse_order.join(' ')
+puts x.pre_order.join(' ')
