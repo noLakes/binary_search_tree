@@ -12,10 +12,6 @@ class Node
   def <=>(other)
     @val <=> other.val
   end
-
-  def end?
-    self.left_child.nil? && self.right_child.nil? ? true : false
-  end
 end
 
 class Tree
@@ -47,15 +43,12 @@ class Tree
   end
 
   def find(val, read = @root)
+    return nil if read.nil?
     if val == read.val
       return read
-    elsif read.end?
-      return nil
     elsif val < read.val
-      return nil if read.left_child.nil?
       find(val, read.left_child)
     else
-      return nil if read.right_child.nil?
       find(val, read.right_child)
     end
   end
@@ -110,3 +103,4 @@ puts "\nin-order"
 p x.in_order
 puts "\npost-order"
 p x.post_order
+
