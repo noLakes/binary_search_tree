@@ -98,10 +98,7 @@ class Tree
     return result
   end
 
-  def level_order(read = @root)
-    queue = []
-    output = []
-    queue.push(read)
+  def level_order(read = @root, queue = [@root], output = [])
     while !queue.empty? && queue.any?(Node)
       read = queue.shift
       if (read != 'nil')
@@ -110,14 +107,22 @@ class Tree
         output.push(read)
       else
         output.push('nil')
-        queue.push('nil')
-        queue.push('nil')
+        queue.push('nil', 'nil')
       end
     end
-    yield(output) if block_given?
-    return output
+    block_given? ? yield(output) : output
   end
 
+  def depth(val)
+    node = find(val)
+    return nil if node.nil?
+    depth = 0
+    while node != @root do
+      node = find_parent(node.val)
+      depth += 1
+    end
+    depth
+  end
 end
 
 x = Tree.new([1, 7, 4, 23, 8, 9, 3, 5, 67, 6345, 324])
@@ -129,4 +134,6 @@ p x.in_order
 puts "\npost-order"
 p x.post_order
 puts "\nlevel-order"
-puts x.level_order
+p x.level_order {|arry| arry.map {|node| node == 'nil' ? node : node.val}}
+p x.depth(1)
+
