@@ -10,7 +10,7 @@ class Node
   end
 
   def <=>(other)
-    @val <=> other.val
+    @val <=> other
   end
 end
 
@@ -98,8 +98,24 @@ class Tree
     return result
   end
 
-  def level_order
-    #returns {0 => [root], 1 => [lvl1 vals] 2 => [lvl2 vals].....}
+  def level_order(read = @root)
+    queue = []
+    output = []
+    queue.push(read)
+    while !queue.empty? && queue.any?(Node)
+      read = queue.shift
+      if (read != 'nil')
+        read.left_child ? queue.push(read.left_child) : queue.push('nil')
+        read.right_child ? queue.push(read.right_child) : queue.push('nil')
+        output.push(read)
+      else
+        output.push('nil')
+        queue.push('nil')
+        queue.push('nil')
+      end
+    end
+    yield(output) if block_given?
+    return output
   end
 
 end
@@ -112,5 +128,5 @@ puts "\nin-order"
 p x.in_order
 puts "\npost-order"
 p x.post_order
-
-p x.find_parent(324)
+puts "\nlevel-order"
+puts x.level_order
