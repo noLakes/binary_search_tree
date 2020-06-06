@@ -63,7 +63,7 @@ class Tree
   end
 
   #Root Left Right
-  def pre_order(node=@root, result = [])
+  def pre_order(node = @root, result = [])
     return if node.nil?
       block_given? ? yield(node) : result << node.val
       pre_order(node.left_child, result)
@@ -81,7 +81,7 @@ class Tree
   end
 
   #Right Root Left
-  def reverse_order(node=@root)
+  def reverse_order(node = @root)
     return if node.nil?
       reverse_order(node.right_child, result)
       block_given? ? yield(node) : result << node.val
@@ -99,6 +99,16 @@ class Tree
   end
 
   def level_order(read = @root, queue = [@root], output = [])
+    while !queue.empty?
+      read = queue.shift
+      queue.push(read.left_child) unless read.left_child.nil?
+      queue.push(read.right_child) unless read.right_child.nil?
+      output.push(read)
+    end
+    block_given? ? yield(output) : output
+  end
+
+  def level_order_with_empty(read = @root, queue = [@root], output = [])
     while !queue.empty? && queue.any?(Node)
       read = queue.shift
       if (read != 'nil')
@@ -113,16 +123,37 @@ class Tree
     block_given? ? yield(output) : output
   end
 
-  def depth(val)
-    node = find(val)
+  def level_order_with_depth(read = @root)
+    tree = pre_order(read)
+    output = [[]]
+    depth(tree[-1]).times {output << []}
+    level_order(read).each do |node|
+      output[depth(node)] << node.val
+    end
+    output
+  end
+
+  def depth(val, root = @root)
+    node = find(val, root)
     return nil if node.nil?
     depth = 0
-    while node != @root do
+    while node != root do
       node = find_parent(node.val)
       depth += 1
     end
     depth
   end
+
+  def balanced?(root = @root)
+    root.left_child.nil? ? left = 0 : left = depth(pre_order(root.left_child)[-1])
+    root.right_child.nil? ? right = 0 : right = depth(pre_order(root.right_child)[-1])
+    (left - right).between?(-1, 1)
+  end
+
+  def rebalance(root = @root)
+
+  end
+
 end
 
 x = Tree.new([1, 7, 4, 23, 8, 9, 3, 5, 67, 6345, 324])
@@ -134,6 +165,11 @@ p x.in_order
 puts "\npost-order"
 p x.post_order
 puts "\nlevel-order"
-p x.level_order {|arry| arry.map {|node| node == 'nil' ? node : node.val}}
-p x.depth(1)
+p x.level_order {|arry| arry.map {|node| node.val}}
+p x.level_order_with_depth
+p x.balanced?
+
+
+
+
 
