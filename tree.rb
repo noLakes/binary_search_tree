@@ -1,4 +1,4 @@
-
+require 'pry'
 class Node
   include Comparable
   attr_accessor :val, :left_child, :right_child
@@ -11,6 +11,10 @@ class Node
 
   def <=>(other)
     @val <=> other
+  end
+
+  def not_parent?
+    self.left_child.nil? && self.right_child.nil?
   end
 end
 
@@ -39,14 +43,50 @@ class Tree
   end
 
   def delete(val)
-
+    node = find(val)
+    return nil if node.nil?
+    remove(node)
   end
 
-  def find_parent(val, read = @root)
-    child = find(val)
-    return nil if child.nil?
-    until read.left_child == child || read.right_child == child do
-      child.val < read.val ? read = read.left_child : read = read.right_child
+  def remove(node)
+    if node.left_child.nil? && node.right_child.nil?
+      parent = find_parent(node)
+      parent.left_child == node ? parent.left_child = nil : parent.right_child = nil
+    elsif node.right_child.nil?
+      remove_one_child(find_parent(node), node, node.left_child)
+    elsif node.left_child.nil?
+      remove_one_child(find_parent(node), node, node.right_child)
+    else
+      remove_two_children(node)
+    end
+  end
+
+  def remove_one_child(parent, child, new_child)
+    if parent.left_child == child
+      parent.left_child = new_child
+    else
+      parent.right_child = new_child
+    end
+  end
+
+  def remove_two_children(node)
+    min_node = find_min_node(node.right_child)
+    node.val = min_node.val
+    remove(min_node)
+  end
+
+  def find_min_node(node)
+    if node.left_child.nil?
+      return node
+    else
+      find_min_node(node.left_child)
+    end
+  end
+
+  def find_parent(node, read = @root)
+    return nil if node.nil?
+    until read.left_child == node || read.right_child == node do
+      node.val < read.val ? read = read.left_child : read = read.right_child
     end
     return read
   end
@@ -138,7 +178,7 @@ class Tree
     return nil if node.nil?
     depth = 0
     while node != root do
-      node = find_parent(node.val)
+      node = find_parent(node)
       depth += 1
     end
     depth
@@ -169,7 +209,5 @@ p x.level_order {|arry| arry.map {|node| node.val}}
 p x.level_order_with_depth
 p x.balanced?
 
-
-
-
-
+x.delete(23)
+p x.in_order
