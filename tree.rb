@@ -84,7 +84,7 @@ class Tree
   end
 
   def find_parent(node, read = @root)
-    return nil if node.nil?
+    return nil if node.nil? || node == @root
     until read.left_child == node || read.right_child == node do
       node.val < read.val ? read = read.left_child : read = read.right_child
     end
@@ -191,7 +191,16 @@ class Tree
   end
 
   def rebalance(root = @root)
-
+    until balanced?(root) do
+      import = level_order(root) {|arry| arry.map {|node| node.val}}
+      new_arry = []
+      until import.empty? do
+        new_arry << import.slice!(import.length / 2)
+      end
+      #binding.pry
+      root = build_tree(new_arry)
+    end
+    pre_order(root)
   end
 
 end
@@ -208,6 +217,4 @@ puts "\nlevel-order"
 p x.level_order {|arry| arry.map {|node| node.val}}
 p x.level_order_with_depth
 p x.balanced?
-
-x.delete(23)
-p x.in_order
+p x.rebalance
