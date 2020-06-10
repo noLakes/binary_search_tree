@@ -34,6 +34,10 @@ class Tree
     new_tree
   end
 
+  def update_root(node)
+    @root = node
+  end
+
   def insert(val, root = @root)
     if val < root.val
       root.left_child.nil? ? root.left_child = Node.new(val) : insert(val, root.left_child)
@@ -91,6 +95,10 @@ class Tree
     return read
   end
 
+  def update_parent(parent, node)
+    node.val > parent.val ? parent.right_child = node : parent.left_child = node
+  end
+
   def find(val, read = @root)
     return nil if read.nil?
     if val == read.val
@@ -119,15 +127,6 @@ class Tree
       in_order(node.right_child, result)
     return result
   end
-
-  #Right Root Left
-  def reverse_order(node = @root)
-    return if node.nil?
-      reverse_order(node.right_child, result)
-      block_given? ? yield(node) : result << node.val
-      reverse_order(node.left_child, result)
-    return result
-  end
   
   #Left Right Root
   def post_order(node = @root, result = [])
@@ -144,21 +143,6 @@ class Tree
       queue.push(read.left_child) unless read.left_child.nil?
       queue.push(read.right_child) unless read.right_child.nil?
       output.push(read)
-    end
-    block_given? ? yield(output) : output
-  end
-
-  def level_order_with_empty(read = @root, queue = [@root], output = [])
-    while !queue.empty? && queue.any?(Node)
-      read = queue.shift
-      if (read != 'nil')
-        read.left_child ? queue.push(read.left_child) : queue.push('nil')
-        read.right_child ? queue.push(read.right_child) : queue.push('nil')
-        output.push(read)
-      else
-        output.push('nil')
-        queue.push('nil', 'nil')
-      end
     end
     block_given? ? yield(output) : output
   end
@@ -184,25 +168,51 @@ class Tree
     depth
   end
 
-  def balanced?(root = @root)
-    root.left_child.nil? ? left = 0 : left = depth(pre_order(root.left_child)[-1])
-    root.right_child.nil? ? right = 0 : right = depth(pre_order(root.right_child)[-1])
-    (left - right).between?(-1, 1)
+  def weight(root = @root)
+    root.left_child.nil? ? left = 0 : left = depth(pre_order(root.left_child)[-1], root)
+    root.right_child.nil? ? right = 0 : right = depth(pre_order(root.right_child)[-1], root)
+    left - right
+  end
+
+  def balanced?(node = @root)
+    weight(node).between?(-1, 1)
   end
 
   def rebalance(root = @root)
-    until balanced?(root) do
-      import = level_order(root) {|arry| arry.map {|node| node.val}}
-      new_arry = []
-      until import.empty? do
-        new_arry << import.slice!(import.length / 2)
-      end
-      #binding.pry
-      root = build_tree(new_arry)
+    if root == @root
+      on_root = true 
+    else
+      on_root = false
+      parent = find_parent(root)
     end
-    pre_order(root)
+    rotations = 0
+    while !balanced?(root) do
+      if weight(root) < -1
+        root = rotate_left(root)
+        on_root ? update_root(root) : update_parent(parent, root)
+        rotations += 1
+      else
+        root = rotate_right(root)
+        on_root ? update_root(root) : update_parent(parent, root)
+        rotations += 1
+      end
+    end
+    "Node balanced in #{rotations} rotations"
   end
 
+  def rotate_right(node)
+    left = node.left_child
+    node.left_child = left.right_child
+    left.right_child = node
+    return left
+  end
+
+  def rotate_left(node)
+    right = node.right_child
+    node.right_child = right.left_child
+    right.left_child = node
+    return right
+  end
 end
 
 x = Tree.new([1, 7, 4, 23, 8, 9, 3, 5, 67, 6345, 324])
@@ -216,5 +226,7 @@ p x.post_order
 puts "\nlevel-order"
 p x.level_order {|arry| arry.map {|node| node.val}}
 p x.level_order_with_depth
-p x.balanced?
-p x.rebalance
+
+p x.rebalance(x.find(7))
+p x.level_order {|arry| arry.map {|node| node.val}}
+
