@@ -1,4 +1,3 @@
-require 'pry'
 require_relative 'node.rb'
 
 class Tree
@@ -18,11 +17,8 @@ class Tree
     root
   end
 
-  def update_root(node)
-    @root = node
-  end
-
   def insert(val, root = @root)
+    return if !find(val).nil?
     if val < root.val
       root.left.nil? ? root.left = Node.new(val) : insert(val, root.left)
     elsif val > root.val
@@ -79,9 +75,6 @@ class Tree
     return read
   end
 
-  def update_parent(parent, node)
-    node.val > parent.val ? parent.right = node : parent.left = node
-  end
 
   def find(val, read = @root)
     return nil if read.nil?
@@ -137,8 +130,13 @@ class Tree
     depth
   end
 
+  def depth_two(node, accum = [0, 0])
+    return accum if node.left.nil? && node.right.nil?
+
+  end
+
   def weight(root = @root)
-    root.left.nil? ? left = 0 : left = depth(pre_order(root.left)[-1], root)
+    root.left.nil? ? left = 0 : left = depth(in_order(root.left)[0], root)
     root.right.nil? ? right = 0 : right = depth(pre_order(root.right)[-1], root)
     left - right
   end
@@ -148,59 +146,28 @@ class Tree
   end
 
   def rebalance(root = @root)
-    if root == @root
-      on_root = true 
-    else
-      on_root = false
-      parent = find_parent(root)
-    end
-    rotations = 0
-    while !balanced?(root) do
-      if weight(root) < -1
-        root = rotate_left(root)
-        on_root ? update_root(root) : update_parent(parent, root)
-        rotations += 1
-      else
-        root = rotate_right(root)
-        on_root ? update_root(root) : update_parent(parent, root)
-        rotations += 1
-      end
-    end
-    "Node balanced in #{rotations} rotations"
-  end
-
-  def rebalance_two(root = @root)
     arr = self.level_order
     @root = build_tree(arr.sort.uniq)
   end
 
-  def rotate_right(node)
-    left = node.left
-    node.left = left.right
-    left.right = node
-    return left
-  end
-
-  def rotate_left(node)
-    right = node.right
-    node.right = right.left
-    right.left = node
-    return right
-  end
 end
 
-x = Tree.new([1, 7, 4, 23, 8, 9, 3, 5, 67, 6345, 324])
+tree = Tree.new([1,7,4,23,3,5,8,67,9,6345,324])
 
-puts "pre-order"
-p x.pre_order
-puts "\nin-order"
-p x.in_order
-puts "\npost-order"
-p x.post_order
-puts "\nlevel-order"
-p x.level_order 
-p x.level_order_with_depth
+p tree.level_order_with_depth
+p tree.pre_order
+p tree.weight
+p tree.balanced?
+tree.insert(-1)
+tree.insert(-2)
+tree.insert(-3)
+tree.insert(-4)
+tree.insert(-5)
+tree.insert(-6)
+p tree.level_order
+p tree.weight
+p tree.balanced?
+tree.rebalance
+p tree.balanced?
 
-
-
-
+#rewrite depth, balanced?, and level with depth traversal
