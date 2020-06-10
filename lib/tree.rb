@@ -106,43 +106,34 @@ class Tree
       queue.push(read.right) unless read.right.nil?
       output.push(read.val)
     end
-    block_given? ? yield(output) : output
+    output
   end
 
   def level_order_with_depth(read = @root)
-    tree = pre_order(read)
     output = [[]]
-    depth(tree[-1]).times {output << []}
-    level_order(read).each do |val|
-      output[depth(find(val))] << val
+    depth.times {output << []}
+    level_order(read).each_with_index do |val, idx|
+      idx == 0 ? output[0] << val : output[how_deep?(val)] << val
     end
     output
   end
 
-  def depth(val, root = @root)
-    node = find(val, root)
-    return nil if node.nil?
-    depth = 0
-    while node != root do
-      node = find_parent(node)
-      depth += 1
-    end
-    depth
+  def depth(node = @root)
+    return -1 if node.nil?
+    left = depth(node.left)
+    right = depth(node.right)
+    left > right ? left + 1 : right + 1
   end
 
-  def depth_two(node, accum = [0, 0])
-    return accum if node.left.nil? && node.right.nil?
-
-  end
-
-  def weight(root = @root)
-    root.left.nil? ? left = 0 : left = depth(in_order(root.left)[0], root)
-    root.right.nil? ? right = 0 : right = depth(pre_order(root.right)[-1], root)
-    left - right
+  def how_deep?(val, parents = 0)
+    return parents if val == @root.val
+    node = find_parent(find(val))
+    how_deep?(node.val, parents + 1)
   end
 
   def balanced?(node = @root)
-    weight(node).between?(-1, 1)
+    weight = depth(root.left) - depth(root.right)
+    weight.between?(-1, 1)
   end
 
   def rebalance(root = @root)
@@ -151,23 +142,3 @@ class Tree
   end
 
 end
-
-tree = Tree.new([1,7,4,23,3,5,8,67,9,6345,324])
-
-p tree.level_order_with_depth
-p tree.pre_order
-p tree.weight
-p tree.balanced?
-tree.insert(-1)
-tree.insert(-2)
-tree.insert(-3)
-tree.insert(-4)
-tree.insert(-5)
-tree.insert(-6)
-p tree.level_order
-p tree.weight
-p tree.balanced?
-tree.rebalance
-p tree.balanced?
-
-#rewrite depth, balanced?, and level with depth traversal
